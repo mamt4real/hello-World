@@ -263,34 +263,44 @@ def choice(menus):
 		try: x = int(input('your choice?: '))
 		except ValueError: continue
 	return x
+
+#to be used for admin access
+#default access u:admin, p:admin
+import Accounts as Accts
 	
 def main():
 	print('choose access')
 	x = choice(['Admin','User','Exit'])
 	mySuper = SuperMarket('store.csv')
-	a_menu = ['Display Items','Set Item Price','Update quantities','Add new Item','View Sales Record','Return']
+	my_admins = Accts.Accounts(('users.csv'))
+	a_menu = ['Display Items','Set Item Price','Update quantities','Add new Item','View Sales Record','Change Password','Add Account','Return']
 	u_menu = ['Display','Buy Items','Return']
 	print()
 	y = -1
 	if x == 1:
-		while y != len(a_menu):
-			print('ADMIN MENU'.center(30))
-			y = choice(a_menu)
-			if y == 1:
-				try: x = int(input('no of rows:'))
-				except ValueError: x = 0
-				finally: mySuper.display(x,True)
-			elif y == 2:
-				mySuper.setItemPrices()
-			elif y == 3:
-				mySuper.updateQuantities()
-			elif y == 4:
-				mySuper.addItem()
-			elif y == 5:
-				mySuper.viewSales()
-			else:
-				print()
-				main()
+		if my_admins.login():
+			while y != len(a_menu):
+				print('ADMIN MENU'.center(30))
+				y = choice(a_menu)
+				if y == 1:
+					try: x = int(input('no of rows:'))
+					except ValueError: x = 0
+					finally: mySuper.display(x,True)
+				elif y == 2:
+					mySuper.setItemPrices()
+				elif y == 3:
+					mySuper.updateQuantities()
+				elif y == 4:
+					mySuper.addItem()
+				elif y == 5:
+					mySuper.viewSales()
+				elif y == 6:
+					my_admins.changePass()
+				elif y == 7:
+					my_admins.register()
+				else:print()
+			else: print('\nAccess Denied\n')
+		main()
 	elif x == 2:
 		while y != len(u_menu):
 			print('USER MENU'.center(30))
