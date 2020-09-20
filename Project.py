@@ -149,6 +149,8 @@ class SuperMarket:
 		
 	def buy(self):
 		amnts = []
+		vats = []
+		bonus = True
 		arg = self.getChoice()
 		if not arg:
 			return
@@ -156,6 +158,8 @@ class SuperMarket:
 		for id in keys:
 			q = arg[id]
 			temp = self.store[id]
+			if temp.unitPrice < 100:
+				bonus = False
 			if temp.quan < q:
 				print('There are only %d pieces of %s left..\n choose how to proceed' %(temp.quan,temp.name))
 				x = choice(['Buy available','Skip Item'])
@@ -164,26 +168,24 @@ class SuperMarket:
 				else:
 					arg.pop(id)
 					continue
-			amnts.append(temp.buy(q))
-		vat = 0.0
-		discount = 0.0
-		if sum(arg.values()) < 5:
-			vat = 0.2 * sum(amnts)
-		elif sum(arg.values()) > 10:
-			vat = 0.3* sum(amnts)
-			if min(amnts) >= 100:
-				discount = 800.00
-		price = sum(amnts) + vat - discount
+			a = temp.buy(q)
+			if q < 5: vats.append(0.2*a)
+			elif q > 10: vats.append(0.3*a)
+			else: vats.append(0.0)
+			amnts.append(a)
+		if len(arg) > 10 and bonus:
+			bonus = 800.00		
+		price = sum(amnts) + sum(vats)
 		from datetime import date as dt
 		d = dt.today().strftime('%d-%m-%y')
 		if d in self.sales:
 			self.sales[d] += price
 		else:
 			self.sales[d] = price
-		receipt = 'MAL ADAMU IFE RETAIL MARKET'.center(60) + '\n' + 'Cash Receipt'.center(60) + '\n\n' + 'S/N'.center(2) + ' Items bought'.center(25) + 'Quantity'.center(10) + 'Unit Price'.center(12) + 'Amount'.center(10) + '\n'
-		for i,itm,q,a in zip(range(len(arg)),self.get(arg.keys()),arg.values(),amnts):	
-			receipt += str(i+1).center(2) + '{:<25}'.format(itm.name) + f'{q:^10,d}' + '{:>12,.2f}'.format(itm.unitPrice) + f'{a:>10,.2f}\n'
-		receipt += '\nVAT: %.2f\tDiscount: %.2f\nTotal amount: %.2f' %(vat,discount,price)
+		receipt = 'MAL ADAMU IFE RETAIL MARKET'.center(60) + '\n' + 'Cash Receipt'.center(60) + '\n\n' + 'S/N'.center(2) + ' Items bought'.center(25) + 'Quan'.center(8) + 'U.Price'.center(10) + 'Amt'.center(7) + 'V.A.T'.center(8) + '\n'
+		for i,itm,q,a,v in zip(range(len(arg)),self.get(arg.keys()),arg.values(),amnts,vats):	
+			receipt += str(i+1).center(2) + '{:<25}'.format(itm.name) + f'{q:^8,d}' + '{:>10,.1f}'.format(itm.unitPrice) + f'{a:>7,.1f}' + f'{v:>8,.1f}\n'
+		receipt += '\nTotal VAT: %.2f\tBonus: %.2f\nTotal amount: %.2f' %(sum(vats),bonus,price)
 		if input('Transaction Successful..\nDo you want receipt? (y/n): ')[0].lower() == 'y':
 			print('='*60)
 			print(receipt)
@@ -299,7 +301,7 @@ def main():
 				elif y == 7:
 					my_admins.register()
 				else:print()
-			else: print('\nAccess Denied\n')
+		else: print('\nAccess Denied\n')
 		main()
 	elif x == 2:
 		while y != len(u_menu):
