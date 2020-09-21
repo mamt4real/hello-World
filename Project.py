@@ -17,6 +17,9 @@ it has two constructors:
 		
 	def setPrice(self,newP):
 		self.unitPrice = newP
+	
+	def set_name(self,new_n):
+		self.name = new_n
 		
 	def getPrice(self):
 		return self.unitPrice
@@ -111,14 +114,19 @@ class SuperMarket:
 			for k,v in self.sales.items():
 				f.write(k + ',' + str(v) + '\n')
 
-	def setItemPrices(self):
-		arg = self.getChoice('Price')
-		if (arg == None) or (not len(arg)):
+	def edit_Items(self,field):
+		p = {
+		'n':['New Name',lambda i,j: self.store[i].set_name(j),'Names'],
+		'p':['New Price',lambda i,j: self.store[i].setPrice(j),'Prices'],
+		'q':['Quantity',lambda i,j: self.store[i].updateQuantity(j),'Quantities']
+		}[field]
+		arg = self.getChoice(p[0])
+		if not arg:
 			return
 		for i,j in arg.items():
-			self.store[i].setPrice(j)
+			p[1](i,j)
 		self.save()
-		print('prices set successfully!\n')
+		print(p[2]+ ' updated successfully!\n')
 		
 	def addItem(self):
 		print('\nenter the following values:')
@@ -134,15 +142,6 @@ class SuperMarket:
 			print('item already exist')
 		if input('\nDo you want to add another item? (y/n) :').lower()[0] == 'y':
 			self.addItem()
-		
-	def updateQuantities(self):
-		arg = self.getChoice()
-		if (arg == None) or (not len(arg)):
-			return
-		for i,j in arg.items():
-			self.store[i].updateQuantity(j)
-		print('Quantities updated successfully\n')
-		self.save()
 	
 	def get(self,ids):
 		return map(self.store.__getitem__,ids)
@@ -195,8 +194,10 @@ class SuperMarket:
 	def getChoice(self,action = 'Quantity'):
 		 print('\nSupply Item ID(s) and ' + action + '(s) to continue..')
 		 f = int 
-		 if action != 'Quantity':
+		 if action.endswith('Price'):
 		 	f = float
+		 elif action.endswith('Name'):
+		 	f = str
 		 result = {}
 		 def inner_getChoice():
 		 	fin = 'y'
@@ -275,7 +276,7 @@ def main():
 	x = choice(['Admin','User','Exit'])
 	mySuper = SuperMarket('store.csv')
 	my_admins = Accts.Accounts(('users.csv'))
-	a_menu = ['Display Items','Set Item Price','Update quantities','Add new Item','View Sales Record','Change Password','Add Account','Return']
+	a_menu = ['Display Items','Edit Items','Add new Item','View Sales Record','Acces Management','Return']
 	u_menu = ['Display','Buy Items','Return']
 	print()
 	y = -1
@@ -289,17 +290,27 @@ def main():
 					except ValueError: x = 0
 					finally: mySuper.display(x,True)
 				elif y == 2:
-					mySuper.setItemPrices()
+					print('\n','\tEdit Items')
+					z = choice(['Change Items Name','Change Items Unit Price','Add Items Quantity','Return'])
+					if z != 4:
+						mySuper.edit_Items(('n','p','q')[z-1])
+					else: print()
 				elif y == 3:
-					mySuper.updateQuantities()
-				elif y == 4:
 					mySuper.addItem()
-				elif y == 5:
+				elif y == 4:
 					mySuper.viewSales()
-				elif y == 6:
-					my_admins.changePass()
-				elif y == 7:
-					my_admins.register()
+				elif y == 5:
+					print('\n','\tAccounts Menu')
+					z = choice(['View Accounts','Change Password','Add new Account','Delete Account','Return'])
+					if z == 1:
+						my_admins.display_users()
+					elif z == 2:
+						my_admins.changePass()
+					elif z == 3:
+						my_admins.register()
+					elif z == 4:
+						my_admins.delete()
+					else: print()
 				else:print()
 		else: print('\nAccess Denied\n')
 		main()

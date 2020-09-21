@@ -14,7 +14,8 @@ class User:
 		self.password = n_pas
 		
 	def __str__(self):
-		return 'Name: %s\nUsername: %s\nPassword: %s' %(self.name,self.username,self.password)
+		f = 3*'{:<15}'
+		return f.format(self.name,self.username,self.password)
 		
 	def save(self):
 		return ','.join((self.name,self.username,self.password))
@@ -41,8 +42,11 @@ class Accounts:
 			print('wrong data in file',e)
 			
 	def display_users(self):
+		f ='\n{:<4}' + (3*'{:<15}')
+		print(f.format('S/N','Name','Username','Password'))
 		for no,user in zip(range(1,len(self.accts)+1),self.accts):
-			print(f'{no:<2}\n',user, sep='')
+			print(f'{no:<4}',user, sep='')
+		print()
 	
 	def save(self):
 		with open(self.s_file,'w') as f:
@@ -76,9 +80,19 @@ class Accounts:
 			if input('retry (y/n): ') == 'y' :
 				self.register()
 		else:
-			print('Account successfully registered')
+			print('\nAccount successfully registered\n')
 			self.accts.append(temp)
 			self.save()
+		
+	def delete(self):
+		user = self.find(input('Enter Username: ').title())
+		if not user:
+			print('Account does not Exist!')
+		else:
+			if input("Are you sure u want to delete %s's account? (y/n): " %user.name) == 'y':
+				self.accts.remove(user)
+				print('Account deleted succesfully!\n')
+				self.save()
 		
 	def changePass(self):
 		user = self.find(input('Username: ').title())
